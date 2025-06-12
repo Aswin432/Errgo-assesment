@@ -1,38 +1,17 @@
-import express, { Request, Response, RequestHandler } from "express";
+import express, {
+  Request,
+  Response,
+  RequestHandler,
+  NextFunction,
+  ErrorRequestHandler,
+} from "express";
 import cors from "cors";
 import { IProject, ICreateProjectRequest } from "./models/project.interface";
 import { v4 as uuid } from "uuid";
-import { z } from "zod"; // Import zod
-import { createProjectSchema, projectIdSchema } from "./schemas/project.schema"; // Import schemas
+import { z } from "zod";
+import { createProjectSchema, projectIdSchema } from "./schemas/project.schema";
+import { handleWebSocketUpgrade } from "./websocket";
 
-import { WebSocketServer, WebSocket } from "ws";
-
-const wss = new WebSocketServer({ noServer: true });
-const chatMessages: string[] = [];
-
-wss.on("connection", (ws) => {
-  console.log("Client connected");
-  ws.send(JSON.stringify(chatMessages)); // Send existing messages to new client
-
-  ws.on("message", (message) => {
-    const msg = message.toString();
-    chatMessages.push(msg);
-    console.log(`Received: ${msg}`);
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify([msg])); // Send new message as an array
-      }
-    });
-  });
-
-  ws.on("close", () => {
-    console.log("Client disconnected");
-  });
-
-  ws.on("error", (error) => {
-    console.error("WebSocket error:", error);
-  });
-});
 const app = express();
 const PORT = 3000;
 
@@ -49,16 +28,29 @@ app.use(
 
 app.use(express.json());
 
+// Centralized error handling middleware
+const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
+  if (err instanceof z.ZodError) {
+    res.status(400).json({ message: "Validation error", errors: err.errors });
+    return; // Exit the middleware after sending response
+  }
+  console.error("Internal server error:", err);
+  res.status(500).json({ message: "Internal server error" });
+  // Do not call next(err) here, as a response has already been sent.
+  // If you want to pass it to another error handler, you would typically
+  // not send a response here.
+};
+
 app.get("/", (_req: Request, res: Response) => {
   res.send("Errgo Backend Interview Module Loaded Successfully!");
 });
 
 const createProjectHandler: RequestHandler<{}, any, ICreateProjectRequest> = (
   req,
-  res
+  res,
+  next
 ): void => {
   try {
-    // Validate request body using Zod schema
     const { name, description } = createProjectSchema.parse(req.body);
 
     const newProject: IProject = {
@@ -70,15 +62,7 @@ const createProjectHandler: RequestHandler<{}, any, ICreateProjectRequest> = (
     projects.push(newProject);
     res.status(201).json(newProject);
   } catch (error: unknown) {
-    // Explicitly type error as unknown
-    if (error instanceof z.ZodError) {
-      res
-        .status(400)
-        .json({ message: "Validation error", errors: error.errors });
-    } else {
-      console.error("Error creating project:", error); // error is now typed as unknown
-      res.status(500).json({ message: "Internal server error" });
-    }
+    next(error);
   }
 };
 
@@ -90,10 +74,10 @@ app.get("/projects", (_req: Request, res: Response) => {
 
 const deleteProjectHandler: RequestHandler<{ id: string }> = (
   req,
-  res
+  res,
+  next
 ): void => {
   try {
-    // Validate request params using Zod schema
     const { id } = projectIdSchema.parse(req.params);
 
     const projectIndex = projects.findIndex((project) => project.id === id);
@@ -107,35 +91,19 @@ const deleteProjectHandler: RequestHandler<{ id: string }> = (
 
     res.status(200).json({ message: "Project deleted successfully" });
   } catch (error: unknown) {
-    // Explicitly type error as unknown
-    if (error instanceof z.ZodError) {
-      res
-        .status(400)
-        .json({ message: "Validation error", errors: error.errors });
-    } else {
-      console.error("Error deleting project:", error); // error is now typed as unknown
-      res.status(500).json({ message: "Internal server error" });
-    }
+    next(error);
   }
 };
 
-// Apply cors middleware directly to the delete route to ensure preflight is handled
-app.delete("/projects/:id", cors(), deleteProjectHandler);
+app.delete("/projects/:id", deleteProjectHandler);
 
-// This explicit options route is still good practice for clarity, but the above is more direct for the DELETE method
 app.options("/projects/:id", cors());
+
+// Apply the error handling middleware last
+app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
 
-server.on("upgrade", (request, socket, head) => {
-  console.log(`WebSocket upgrade request URL: ${request.url}`);
-  if (request.url === "/chat") {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit("connection", ws, request);
-    });
-  } else {
-    socket.destroy();
-  }
-});
+server.on("upgrade", handleWebSocketUpgrade);
