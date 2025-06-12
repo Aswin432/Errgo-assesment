@@ -1,12 +1,15 @@
 import React from "react";
 import { Search, Bell, MessageCircle, Menu, ArrowLeft } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 interface TopNavbarProps {
   toggleSidebar?: () => void;
 }
 
 const TopNavbar: React.FC<TopNavbarProps> = ({ toggleSidebar }) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
+
   return (
     <div className="h-14 border-b border-blue-300 flex items-center justify-between px-4 bg-gray-100">
       {/* Left section with logo and toggle */}
@@ -19,12 +22,14 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ toggleSidebar }) => {
                          border-b-16 border-b-purple-600"
           />
         </div>
-        <div className="px-4 py-2 border-none border-purple-200 flex items-center">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          <NavLink to="/">
-            <span className="text-sm">Go Back to Home</span>
-          </NavLink>
-        </div>
+        {!isHomePage && (
+          <div className="px-4 py-2 border-none border-purple-200 flex items-center">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            <NavLink to="/">
+              <span className="text-sm">Go Back to Home</span>
+            </NavLink>
+          </div>
+        )}
         {/* Sidebar toggle button */}
         <button
           onClick={toggleSidebar}

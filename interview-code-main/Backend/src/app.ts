@@ -2,20 +2,23 @@ import express, { Request, Response, RequestHandler } from "express";
 import cors from "cors";
 import { IProject, ICreateProjectRequest } from "./models/project.interface";
 import { v4 as uuid } from "uuid";
+import { z } from "zod"; // Import zod
+import { createProjectSchema, projectIdSchema } from "./schemas/project.schema"; // Import schemas
 
 const app = express();
 const PORT = 3000;
-// List of projects
+
 const projects: IProject[] = [];
 
-// Setup cors and express.json()
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "DELETE"],
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
 app.use(express.json());
 
 app.get("/", (_req: Request, res: Response) => {
@@ -25,39 +28,74 @@ app.get("/", (_req: Request, res: Response) => {
 const createProjectHandler: RequestHandler<{}, any, ICreateProjectRequest> = (
   req,
   res
-) => {
-  const { name, description } = req.body;
-  if (!name || !description) {
-    res.status(400).json({ message: "Name and description are required" });
-    return; // Explicitly return void after sending response
+): void => {
+  try {
+    // Validate request body using Zod schema
+    const { name, description } = createProjectSchema.parse(req.body);
+
+    const newProject: IProject = {
+      id: uuid(),
+      name,
+      description,
+    };
+
+    projects.push(newProject);
+    res.status(201).json(newProject);
+  } catch (error: unknown) {
+    // Explicitly type error as unknown
+    if (error instanceof z.ZodError) {
+      res
+        .status(400)
+        .json({ message: "Validation error", errors: error.errors });
+    } else {
+      console.error("Error creating project:", error); // error is now typed as unknown
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
-  const newProject: IProject = {
-    id: uuid(),
-    name,
-    description,
-  };
-  projects.push(newProject);
-  res.status(201).json(newProject);
 };
 
 app.post("/projects", createProjectHandler);
 
-app.get("/projects", (req: Request, res: Response) => {
+app.get("/projects", (_req: Request, res: Response) => {
   res.status(200).json(projects);
 });
 
-app.delete("/projects/:id", (req: Request, res: Response) => {
-  const { id } = req.params;
-  const initialLength = projects.length;
-  const updatedProjects = projects.filter((project) => project.id !== id);
-  projects.splice(0, projects.length, ...updatedProjects); // Efficiently update the original array
+const deleteProjectHandler: RequestHandler<{ id: string }> = (
+  req,
+  res
+): void => {
+  try {
+    // Validate request params using Zod schema
+    const { id } = projectIdSchema.parse(req.params);
 
-  if (projects.length < initialLength) {
+    const projectIndex = projects.findIndex((project) => project.id === id);
+
+    if (projectIndex === -1) {
+      res.status(404).json({ message: "Project not found" });
+      return;
+    }
+
+    projects.splice(projectIndex, 1);
+
     res.status(200).json({ message: "Project deleted successfully" });
-  } else {
-    res.status(404).json({ message: "Project not found" });
+  } catch (error: unknown) {
+    // Explicitly type error as unknown
+    if (error instanceof z.ZodError) {
+      res
+        .status(400)
+        .json({ message: "Validation error", errors: error.errors });
+    } else {
+      console.error("Error deleting project:", error); // error is now typed as unknown
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
-});
+};
+
+// Apply cors middleware directly to the delete route to ensure preflight is handled
+app.delete("/projects/:id", cors(), deleteProjectHandler);
+
+// This explicit options route is still good practice for clarity, but the above is more direct for the DELETE method
+app.options("/projects/:id", cors());
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
