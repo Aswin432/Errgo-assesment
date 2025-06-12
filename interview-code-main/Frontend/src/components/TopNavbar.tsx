@@ -58,9 +58,9 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ toggleSidebar }) => {
         <button className="p-1 rounded hover:bg-gray-100">
           <Bell className="h-5 w-5 text-gray-700" />
         </button>
-        <button className="p-1 rounded hover:bg-gray-100">
+        <NavLink to="/chat" className="p-1 rounded hover:bg-gray-100">
           <MessageCircle className="h-5 w-5 text-gray-700" />
-        </button>
+        </NavLink>
         <div className="ml-2 flex items-center">
           <div className="bg-gray-200 rounded-full h-8 w-8 flex items-center justify-center text-xs font-medium text-gray-700">
             VA

@@ -89,8 +89,10 @@ const Sidebar: React.FC<SidebarProps> = ({ visible = true }) => {
             <span>Search</span>
           </li>
           <li className="px-1 py-1 hover:bg-purple-200 flex items-center">
-            <MessageSquare className="h-4 w-4 mr-3" />
-            <span>Messages</span>
+            <NavLink to="/chat" className="flex items-center w-full">
+              <MessageSquare className="h-4 w-4 mr-3" />
+              <span>Messages</span>
+            </NavLink>
           </li>
           <li className="px-1 py-1 hover:bg-purple-200 flex items-center">
             <User className="h-4 w-4 mr-3" />

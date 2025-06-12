@@ -5,6 +5,34 @@ import { v4 as uuid } from "uuid";
 import { z } from "zod"; // Import zod
 import { createProjectSchema, projectIdSchema } from "./schemas/project.schema"; // Import schemas
 
+import { WebSocketServer, WebSocket } from "ws";
+
+const wss = new WebSocketServer({ noServer: true });
+const chatMessages: string[] = [];
+
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+  ws.send(JSON.stringify(chatMessages)); // Send existing messages to new client
+
+  ws.on("message", (message) => {
+    const msg = message.toString();
+    chatMessages.push(msg);
+    console.log(`Received: ${msg}`);
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify([msg])); // Send new message as an array
+      }
+    });
+  });
+
+  ws.on("close", () => {
+    console.log("Client disconnected");
+  });
+
+  ws.on("error", (error) => {
+    console.error("WebSocket error:", error);
+  });
+});
 const app = express();
 const PORT = 3000;
 
@@ -97,6 +125,17 @@ app.delete("/projects/:id", cors(), deleteProjectHandler);
 // This explicit options route is still good practice for clarity, but the above is more direct for the DELETE method
 app.options("/projects/:id", cors());
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+});
+
+server.on("upgrade", (request, socket, head) => {
+  console.log(`WebSocket upgrade request URL: ${request.url}`);
+  if (request.url === "/chat") {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
+  } else {
+    socket.destroy();
+  }
 });
