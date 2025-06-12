@@ -1,7 +1,7 @@
-import express from 'express';
-import cors from 'cors';
-import { IProject } from './models/project.interface';
-import { v4 as uuid } from 'uuid';
+import express, { Request, Response, RequestHandler } from "express";
+import cors from "cors";
+import { IProject, ICreateProjectRequest } from "./models/project.interface";
+import { v4 as uuid } from "uuid";
 
 const app = express();
 const PORT = 3000;
@@ -9,38 +9,43 @@ const PORT = 3000;
 const projects: IProject[] = [];
 
 // Setup cors and express.json()
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
-app.get('/', (_req, res) => {
-  res.send('Errgo Backend Interview Module Loaded Successfully!');
+app.get("/", (_req: Request, res: Response) => {
+  res.send("Errgo Backend Interview Module Loaded Successfully!");
+});
+
+const createProjectHandler: RequestHandler<{}, any, ICreateProjectRequest> = (
+  req,
+  res
+) => {
+  const { name, description } = req.body;
+  if (!name || !description) {
+    res.status(400).json({ message: "Name and description are required" });
+    return; // Explicitly return void after sending response
+  }
+  const newProject: IProject = {
+    id: uuid(),
+    name,
+    description,
+  };
+  projects.push(newProject);
+  res.status(201).json(newProject);
+};
+
+app.post("/projects", createProjectHandler);
+
+app.get("/projects", (req: Request, res: Response) => {
+  res.status(200).json(projects);
 });
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-});
-
-app.post('/projects', (req, res) => {
-  /**
-   * TODO: Complete the method for creating a new project
-   * The response should contain an object of type IProject
-   * 
-   * Hint: Utilize the `projects` to store the newly generated of project
-   * Hint: Utilize the `uuid` npm package to generate the unique ids for the project
-   */
-  // res.status(200).json('REPLACE_ME');
-});
-
-app.get('/projects', (req, res) => {
-  /**
-   * TODO: Complete the method for returning the current list of projects
-   * The responese should contain a list of IProject
-   * 
-   * Hint: Utilize the `projects` to retrieve the list of projects
-   */
-  // res.status(200).json('REPLACE_ME');
 });
