@@ -1,25 +1,34 @@
 import { useState } from "react";
 import { useEffect } from "react";
 import type { IProject } from "../models/ProjectModels";
-import { getProjects } from "../controller/ProjectController";
+import { getProjects, deleteProject } from "../controller/ProjectController";
+import { toast } from "react-toastify";
 
 const ProjectDetailsPage = () => {
   const [projects, setProjects] = useState<IProject[]>([]);
+
+  const fetchProjects = async () => {
+    const fetchedProjects = await getProjects();
+    setProjects(fetchedProjects);
+  };
 
   /**
    * Fetch all the projects on load
    */
   useEffect(() => {
-    const initProjects = async () => {
-      /**
-       * TODO: Complete method to pull project details by calling `getProjects` from ProjectController.ts
-       */
-      const fetchedProjects = await getProjects();
-      setProjects(fetchedProjects);
-    };
-
-    initProjects();
+    fetchProjects();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProject(id);
+      toast.success("Project deleted successfully!");
+      fetchProjects(); // Refresh the list after deletion
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      toast.error("Failed to delete project.");
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1">
@@ -64,9 +73,9 @@ const ProjectDetailsPage = () => {
                   <div className="text-sm">{project.description}</div>
                 </div>
 
-                {/* Share Button */}
-                <div className="flex justify-end mt-4">
-                  {/* Dummy Button */}
+                {/* Action Buttons */}
+                <div className="flex justify-end mt-4 space-x-2">
+                  {/* Share Button */}
                   <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 rounded px-4 py-2 text-sm flex items-center">
                     Share
                     <svg
@@ -82,6 +91,15 @@ const ProjectDetailsPage = () => {
                         d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
                       />
                     </svg>
+                  </button>
+                  {/* Delete Button */}
+                  <button
+                    onClick={() =>
+                      handleDelete(project.id as unknown as string)
+                    }
+                    className="bg-red-500 hover:bg-red-600 text-white rounded px-4 py-2 text-sm"
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

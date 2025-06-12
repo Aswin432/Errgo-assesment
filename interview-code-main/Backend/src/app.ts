@@ -12,7 +12,7 @@ const projects: IProject[] = [];
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "DELETE"],
     credentials: true,
   })
 );
@@ -44,6 +44,19 @@ app.post("/projects", createProjectHandler);
 
 app.get("/projects", (req: Request, res: Response) => {
   res.status(200).json(projects);
+});
+
+app.delete("/projects/:id", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const initialLength = projects.length;
+  const updatedProjects = projects.filter((project) => project.id !== id);
+  projects.splice(0, projects.length, ...updatedProjects); // Efficiently update the original array
+
+  if (projects.length < initialLength) {
+    res.status(200).json({ message: "Project deleted successfully" });
+  } else {
+    res.status(404).json({ message: "Project not found" });
+  }
 });
 
 app.listen(PORT, () => {

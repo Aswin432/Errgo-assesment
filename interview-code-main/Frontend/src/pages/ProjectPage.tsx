@@ -2,6 +2,7 @@ import React, { useState, type FormEvent } from "react";
 import { Eye, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createProject } from "../controller/ProjectController";
+import { toast } from "react-toastify";
 
 export const ProjectPage: React.FC = () => {
   const [projectName, setProjectName] = useState<string>("");
@@ -25,7 +26,7 @@ export const ProjectPage: React.FC = () => {
      */
 
     if (!projectName || !projectDescription) {
-      alert("Project name and description cannot be empty.");
+      toast.error("Project name and description cannot be empty.");
       return;
     }
 
@@ -37,14 +38,14 @@ export const ProjectPage: React.FC = () => {
       // Assuming createProject throws an error or returns null/undefined on failure
       // If it returns the project object on success, we check for that.
       if (newProject) {
-        alert("Successfully created project");
+        toast.success("Successfully created project!");
         navigate("/project-details");
       } else {
-        alert("Failed to create project.");
+        toast.error("Failed to create project.");
       }
     } catch (error) {
       console.error("Error creating project:", error);
-      alert("An error occurred while creating the project.");
+      toast.error("An error occurred while creating the project.");
     }
   };
 
