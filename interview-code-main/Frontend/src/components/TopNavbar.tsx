@@ -4,9 +4,13 @@ import { NavLink, useLocation } from "react-router-dom";
 
 interface TopNavbarProps {
   toggleSidebar?: () => void;
+  notificationCount?: number; // Add notificationCount prop
 }
 
-const TopNavbar: React.FC<TopNavbarProps> = ({ toggleSidebar }) => {
+const TopNavbar: React.FC<TopNavbarProps> = ({
+  toggleSidebar,
+  notificationCount = 0,
+}) => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
 
@@ -55,8 +59,13 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ toggleSidebar }) => {
 
       {/* Right section with notifications */}
       <div className="flex items-center space-x-4">
-        <button className="p-1 rounded hover:bg-gray-100">
+        <button className="p-1 rounded hover:bg-gray-100 relative">
           <Bell className="h-5 w-5 text-gray-700" />
+          {notificationCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              {notificationCount}
+            </span>
+          )}
         </button>
         <NavLink to="/chat" className="p-1 rounded hover:bg-gray-100">
           <MessageCircle className="h-5 w-5 text-gray-700" />

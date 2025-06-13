@@ -16,7 +16,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 interface SidebarProps {
   visible?: boolean;
@@ -24,6 +24,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ visible = true }) => {
   const [menuExpanded, setMenuExpanded] = React.useState(true);
+  const location = useLocation(); // Get the current location
 
   // If not visible, return null or an empty div to avoid rendering anything
   if (!visible) {
@@ -45,12 +46,14 @@ const Sidebar: React.FC<SidebarProps> = ({ visible = true }) => {
       {/* Navigation Menu */}
       <div className="flex-grow overflow-y-auto">
         <ul className="py-1">
-          <li className="px-1 py-1 hover:bg-purple-200 flex items-center">
-            <NavLink to="/" className="flex items-center w-full">
-              <Home className="h-4 w-4 mr-3" />
-              <span>Home</span>
-            </NavLink>
-          </li>
+          {location.pathname !== "/" && ( // Conditionally render Home link
+            <li className="px-1 py-1 hover:bg-purple-200 flex items-center">
+              <NavLink to="/" className="flex items-center w-full">
+                <Home className="h-4 w-4 mr-3" />
+                <span>Home</span>
+              </NavLink>
+            </li>
+          )}
           <li className="px-1 py-1 hover:bg-purple-200 flex items-center">
             <NavLink to="/project-details" className="flex items-center w-full">
               <Folder className="h-4 w-4 mr-3" />

@@ -1,26 +1,150 @@
-# Errgo Code Assessment
-This repo contains two directories:
-1. Backend
-2. Frontend
+# Project Title: Full-Stack Application
 
-There are multiple `TODO`s scattered across both directories. The goal is to complete the TODOs to implement a full round trip scenario to populate and display the data on the front end. It's recommended to start with the `Frontend` directory to get a better understanding of the project and to help determine the necessary code to be added in the `Backend` directory.
+## Overview
 
-Work will be graded taking into account the following aspects:
-- Clean code
-- Conciseness of solution
-- TSDoc
+This is a full-stack application demonstrating a basic setup with a Node.js/Express backend and a React frontend. The backend provides an API and WebSocket communication, while the frontend consumes these services to provide a user interface.
 
-Please read the respective `README.md` files found in each directory for more details.
+## Features
 
-# Highly Visibile Bonus Task (Optional)
-Implement a chat system utilizing web sockets on both frontend and backend. This should just be a simple system where multiple users can chat to one another on one single session.
-- For the frontend, create a new page and route to the page `/chat`
-  - Bare minimum design, you dont need to show user names, just a new line for each message
-  - Simple text field and send button
-- No need to implement multiple rooms/sessions
-- Utilize the web socket node package for backend and the client web socket for front end
-- Messages should be displaying live
-- Store the state of the chat on the backend (will be destroyed upon server restart/shut down)
+- **Backend**:
+  - RESTful API endpoints (e.g., for project management, as suggested by `ProjectModels.ts` and `ProjectController.ts` in the frontend).
+  - WebSocket communication for real-time features (e.g., chat, as suggested by `websocket.ts` and `ChatPage.tsx`).
+  - Uses Express.js for routing and middleware.
+  - TypeScript for type safety.
+- **Frontend**:
+  - Built with React for a dynamic user interface.
+  - Components for navigation (`Sidebar.tsx`, `TopNavbar.tsx`), project display (`ProjectCard.tsx`), and chat (`ChatPage.tsx`).
+  - Uses Vite for fast development.
+  - Tailwind CSS for styling.
+  - TypeScript for type safety.
 
-# Submission
-For submission, please upload your solution as a private repository on your GitHub profile and share it with `errgo.project@gmail.com`
+## Technologies Used
+
+### Backend
+
+- **Node.js**: JavaScript runtime.
+- **Express.js**: Web application framework.
+- **TypeScript**: Superset of JavaScript for type-safe development.
+- **ws**: WebSocket library.
+- **cors**: Middleware for enabling Cross-Origin Resource Sharing.
+
+### Frontend
+
+- **React**: JavaScript library for building user interfaces.
+- **Vite**: Next-generation frontend tooling.
+- **TypeScript**: Superset of JavaScript for type-safe development.
+- **Tailwind CSS**: Utility-first CSS framework.
+
+## Setup and Installation
+
+Follow these steps to get the project up and running on your local machine.
+
+### Prerequisites
+
+- Node.js (LTS version recommended)
+- npm (Node Package Manager) or Yarn
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/your-repository-name.git
+cd your-repository-name
+```
+
+### 2. Backend Setup
+
+Navigate to the `Backend` directory and install dependencies:
+
+```bash
+cd interview-code-main/Backend
+npm install
+# or
+yarn install
+```
+
+### 3. Frontend Setup
+
+Open a new terminal, navigate to the `Frontend` directory, and install dependencies:
+
+```bash
+cd interview-code-main/Frontend
+npm install
+# or
+yarn install
+```
+
+## Running the Application
+
+### 1. Start the Backend Server
+
+From the `interview-code-main/Backend` directory, run:
+
+```bash
+npm start
+# or
+npm run dev
+```
+
+The backend server will typically run on `http://localhost:3000` (or the port specified in `process.env.PORT`). You should see a message like `Server is running on port 3000`.
+
+### 2. Start the Frontend Development Server
+
+From the `interview-code-main/Frontend` directory, run:
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+The frontend development server will typically open in your browser at `http://localhost:5173` (or another available port).
+
+## Project Structure
+
+```
+.
+├── interview-code-main/
+│   ├── Backend/
+│   │   ├── src/
+│   │   │   ├── app.ts             # Main Express application setup
+│   │   │   ├── websocket.ts       # WebSocket handling
+│   │   │   └── models/            # Backend data models
+│   │   │   └── schemas/           # Backend data schemas
+│   │   ├── package.json           # Backend dependencies and scripts
+│   │   └── tsconfig.json          # TypeScript configuration for backend
+│   ├── Frontend/
+│   │   ├── public/                # Static assets
+│   │   ├── src/
+│   │   │   ├── App.tsx            # Main React component
+│   │   │   ├── main.tsx           # React entry point
+│   │   │   ├── index.css          # Global styles
+│   │   │   ├── assets/            # Frontend assets
+│   │   │   ├── components/        # Reusable React components
+│   │   │   ├── controller/        # Frontend logic/controllers
+│   │   │   ├── models/            # Frontend data models
+│   │   │   └── pages/             # Page-level React components
+│   │   ├── package.json           # Frontend dependencies and scripts
+│   │   ├── tsconfig.json          # TypeScript configuration for frontend
+│   │   ├── vite.config.ts         # Vite configuration
+│   │   └── tailwind.config.js     # Tailwind CSS configuration
+│   └── README.md                  # This file
+```
+
+## Usage
+
+Once both the backend and frontend servers are running, open your browser to the frontend URL (e.g., `http://localhost:5173`). You can then interact with the application's UI, which will communicate with the backend API and WebSocket services.
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/YourFeature`).
+3.  Make your changes.
+4.  Commit your changes (`git commit -m 'Add some feature'`).
+5.  Push to the branch (`git push origin feature/YourFeature`).
+6.  Open a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the `LICENSE` file for details (if applicable, otherwise specify your chosen license).
